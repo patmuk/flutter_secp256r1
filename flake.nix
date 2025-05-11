@@ -3,10 +3,6 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs?ref=nixos-24.11";
     flake-utils.url = "github:numtide/flake-utils";
-    fenix = {
-      url = "github:nix-community/fenix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     android-nixpkgs = {
       url = "github:tadfisher/android-nixpkgs";
       inputs = {
@@ -17,7 +13,7 @@
     };
   };
   outputs =
-    { self, nixpkgs, flake-utils, fenix, android-nixpkgs }:
+    { self, nixpkgs, flake-utils, android-nixpkgs }:
     flake-utils.lib.eachDefaultSystem (system:
     let
       pkgs = import nixpkgs {
@@ -37,14 +33,6 @@
         {
           inherit pkgs local_flutter_path flutter_version;
         };
-      frb_version = "latest";
-      flutter_rust_bridge_codegen = import ./nix/flutter_rust_bridge_codegen.nix {
-        inherit pkgs frb_version;
-      };
-      rustToolchain = fenix.packages.${system}.fromToolchainFile {
-        file = ./rust-toolchain.toml;
-        sha256 = "sha256-X/4ZBHO3iW0fOenQ3foEvscgAPJYl2abspaBThDOukI=";
-      };
       androidCustomPackage = android-nixpkgs.sdk.${system} (
         # show all potential values with
         # nix flake show github:tadfisher/android-nixpkgs
@@ -58,6 +46,7 @@
           ndk-23-1-7779620
           ndk-26-1-10909125
           ndk-26-3-11579264
+          ndk-27-0-12077973
           ndk-28-0-13004108
           platform-tools
           emulator
@@ -83,8 +72,6 @@
             cocoapods
             # broken: https://github.com/flutter/flutter/issues/167823
             # flutter
-            flutter_rust_bridge_codegen
-            rustToolchain
             androidCustomPackage
             pinnedJDK
             just
