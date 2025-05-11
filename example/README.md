@@ -1,6 +1,6 @@
-# p256_example
+# new_example
 
-Demonstrates how to use the p256 plugin.
+A new Flutter project.
 
 ## Getting Started
 
