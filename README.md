@@ -17,7 +17,11 @@ For this Flutter Method Channels are used, the API interacting code is written i
 
 The folder `lib/utils/` contains many converter functions, however, only a few in `lib/extension.dart` are actually used. For convinience the rest is left here from the fork but can be removed.
 
-This project has been forked from [AstroxNetwork/flutter_secp256r1](https://github.com/AstroxNetwork/flutter_secp256r1) to remove the dependency on `agent_dart` and 'Flutter_rust_bridge'.
+This project has been forked from [AstroxNetwork/flutter_secp256r1](https://github.com/AstroxNetwork/flutter_secp256r1) to remove the dependency on `agent_dart` and 'Flutter_rust_bridge'. ([Why!](https://github.com/AstroxNetwork/flutter_secp256r1/issues/9))
+Doing so I removed the en/decrypt functions as well, as they are not done on the secure computing environment anyways.
+If you want to encrypt your data, `getSharedSecret`, use a `KDF` algorithm to compute a symmetric key and encrypt your data with it. 
+This is more performant as well.
+Hint: Use an ephemeral asymetric key pair for perfect forward security instead of the others public key alone.
 
 ## Methods
 
