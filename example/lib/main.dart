@@ -22,8 +22,6 @@ class _MyAppState extends State<MyApp> {
   String _signed = 'Unknown';
   bool? _verified;
   String? _sharedSecret;
-  // String? _decrypted;
-  // Tuple2<Uint8List, Uint8List>? _encrypted;
 
   final _payloadTEC = TextEditingController(text: 'Hello world');
   final _othersPublicKeyTEC = TextEditingController();
@@ -33,6 +31,89 @@ class _MyAppState extends State<MyApp> {
   String get _verifyPayload => _payloadTEC.text;
 
   @override
+  void initState() {
+    super.initState();
+    _othersPublicKeyTEC.addListener(_onOthersPublicKeyChanged);
+  }
+
+  @override
+  void dispose() {
+    _othersPublicKeyTEC.removeListener(_onOthersPublicKeyChanged);
+    _payloadTEC.dispose();
+    _othersPublicKeyTEC.dispose();
+    super.dispose();
+  }
+
+  void _onOthersPublicKeyChanged() {
+    if (_othersPublicKeyTEC.text.isNotEmpty) {
+      _getSharedSecret();
+    } else {
+      setState(() {
+        _sharedSecret = null;
+      });
+    }
+  }
+
+  Future<void> _getPublicKey() async {
+    try {
+      final r = await SecureP256.getPublicKey(alias);
+      setState(() => _publicKey = hex.encode(r.rawKey));
+    } catch (e) {
+      setState(() => _publicKey = 'Error getting public key: $e');
+    }
+  }
+
+  Future<void> _sign() async {
+    try {
+      final r = await SecureP256.sign(
+        alias,
+        Uint8List.fromList(utf8.encode(_verifyPayload)),
+      );
+      setState(() => _signed = hex.encode(r));
+    } catch (e) {
+      setState(() => _signed = 'Error signing: $e');
+    }
+  }
+
+  Future<void> _verify() async {
+    if (_publicKey == 'Unknown' || _signed == 'Unknown') {
+      setState(() => _verified = null); // Reset if inputs are not ready
+      return;
+    }
+    try {
+      final r = await SecureP256.verify(
+        Uint8List.fromList(utf8.encode(_verifyPayload)),
+        P256PublicKey.fromRaw(
+          Uint8List.fromList(hex.decode(_publicKey)),
+        ),
+        Uint8List.fromList(hex.decode(_signed)),
+      );
+      setState(() => _verified = r);
+    } catch (e) {
+      setState(() => _verified = false); // Indicate failure during verification
+      print('Error verifying: $e'); // Log the error for debugging
+    }
+  }
+
+  Future<void> _getSharedSecret() async {
+    try {
+      final r = await SecureP256.getSharedSecret(
+        alias,
+        P256PublicKey.fromRaw(
+          Uint8List.fromList(
+            hex.decode(_othersPublicKeyTEC.text),
+          ),
+        ),
+      );
+      setState(() => _sharedSecret = hex.encode(r));
+    } catch (e) {
+      setState(() =>
+          _sharedSecret = 'Error: Invalid Public Key or computation failed');
+      print('Error getting shared secret: $e'); // Log the error for debugging
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
@@ -40,98 +121,40 @@ class _MyAppState extends State<MyApp> {
           title: const Text('Plugin example app'),
         ),
         body: ListView(
+          padding: const EdgeInsets.all(16.0),
           children: [
-            SelectableText('getPublicKey: $_publicKey\n'),
-            SelectableText('sign: $_signed\n'),
-            SelectableText('verify: $_verified\n'),
-            SelectableText('sharedSecret: $_sharedSecret\n'),
-            // SelectableText('encrypted: $_encrypted\n'),
-            // SelectableText('decrypted: $_decrypted\n'),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-              child: TextField(
-                controller: _payloadTEC,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  label: Text('Payload text field'),
-                ),
+            ElevatedButton(
+              onPressed: _getPublicKey,
+              child: const Text('Generate Public Key'),
+            ),
+            SelectableText('Public Key: $_publicKey\n'),
+            TextField(
+              controller: _othersPublicKeyTEC,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'Others Public Key (hex)',
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-              child: TextField(
-                controller: _othersPublicKeyTEC,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  label: Text('Others Public Key (hex)'),
-                ),
+            // Shared secret is updated automatically when Others Public Key is entered
+            SelectableText('Shared Secret: ${_sharedSecret ?? 'Unknown'}\n'),
+            TextField(
+              controller: _payloadTEC,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'Payload text field',
               ),
             ),
             ElevatedButton(
-              onPressed: () {
-                SecureP256.getPublicKey(alias).then(
-                  (r) => setState(() => _publicKey = hex.encode(r.rawKey)),
-                );
-              },
-              child: const Text('getPublicKey'),
+              onPressed: _sign,
+              child: const Text('Sign Payload'),
             ),
+            SelectableText('Signed Payload: $_signed\n'),
             ElevatedButton(
-              onPressed: () {
-                SecureP256.sign(
-                  alias,
-                  Uint8List.fromList(utf8.encode(_verifyPayload)),
-                ).then((r) => setState(() => _signed = hex.encode(r)));
-              },
-              child: const Text('sign'),
+              onPressed: _verify,
+              child: const Text('Verify Signature'),
             ),
-            ElevatedButton(
-              onPressed: () {
-                SecureP256.verify(
-                  Uint8List.fromList(utf8.encode(_verifyPayload)),
-                  P256PublicKey.fromRaw(
-                    Uint8List.fromList(hex.decode(_publicKey)),
-                  ),
-                  Uint8List.fromList(hex.decode(_signed)),
-                ).then((r) => setState(() => _verified = r));
-              },
-              child: const Text('verify'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                SecureP256.getSharedSecret(
-                  alias,
-                  P256PublicKey.fromRaw(
-                    Uint8List.fromList(
-                      hex.decode(_othersPublicKeyTEC.text),
-                    ),
-                  ),
-                ).then((r) => setState(() => _sharedSecret = hex.encode(r)));
-              },
-              child: const Text('getSharedSecret'),
-            ),
-            // ElevatedButton(
-            //   onPressed: () {
-            //     SecureP256.encrypt(
-            //       sharedSecret: Uint8List.fromList(
-            //         hex.decode(_sharedSecret!),
-            //       ),
-            //       message: Uint8List.fromList(utf8.encode('Hello AstroX')),
-            //     ).then((r) => setState(() => _encrypted = r));
-            //   },
-            //   child: const Text('Encrypt (FFI)'),
-            // ),
-            // ElevatedButton(
-            //   onPressed: () {
-            //     SecureP256.decrypt(
-            //       sharedSecret: Uint8List.fromList(
-            //         hex.decode(_sharedSecret!),
-            //       ),
-            //       iv: _encrypted!.item1,
-            //       cipher: _encrypted!.item2,
-            //     ).then((r) => setState(() => _decrypted = utf8.decode(r)));
-            //   },
-            //   child: const Text('Decrypt (FFI)'),
-            // ),
+            SelectableText(
+                'Verification Status: ${_verified == null ? 'Unknown' : (_verified! ? 'Verified' : 'Not Verified')}\n'),
           ],
         ),
       ),
