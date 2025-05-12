@@ -1,8 +1,5 @@
-import 'dart:typed_data';
-
 import 'package:validators/validators.dart' as validators;
 
-import '../definitions/extension.dart';
 import 'u8a.dart';
 
 bool isAscii(dynamic value) {
