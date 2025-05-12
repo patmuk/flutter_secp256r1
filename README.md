@@ -24,3 +24,4 @@ This project has been forked from [AstroxNetwork/flutter_secp256r1](https://gith
 - `SecureP256.getPublicKey`
 - `SecureP256.sign`
 - `SecureP256.verify`
+- `SecureP256.getSharedSecret`
