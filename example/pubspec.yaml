@@ -1,4 +1,4 @@
-name: p256_example
+name: example
 description: Demonstrates how to use the p256 plugin.
 publish_to: 'none'
 
@@ -13,11 +13,7 @@ dependencies:
   secp256r1:
     path: ../
 
-  agent_dart: ^1.0.0-0
-  agent_dart_base: ^1.0.0-0
   convert: any
-  crypto: any
-  tuple: any
 
 dev_dependencies:
   flutter_test:

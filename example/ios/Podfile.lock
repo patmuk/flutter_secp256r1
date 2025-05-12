@@ -1,25 +1,19 @@
 PODS:
-  - agent_dart (1.0.0):
-    - Flutter
   - Flutter (1.0.0)
   - secp256r1 (0.1.0):
     - Flutter
 
 DEPENDENCIES:
-  - agent_dart (from `.symlinks/plugins/agent_dart/ios`)
   - Flutter (from `Flutter`)
   - secp256r1 (from `.symlinks/plugins/secp256r1/ios`)
 
 EXTERNAL SOURCES:
-  agent_dart:
-    :path: ".symlinks/plugins/agent_dart/ios"
   Flutter:
     :path: Flutter
   secp256r1:
     :path: ".symlinks/plugins/secp256r1/ios"
 
 SPEC CHECKSUMS:
-  agent_dart: b7b692858ff3ea6fdb65bcd42c0c3d719c3685a5
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   secp256r1: c4054eb1aa9e47c266a9c2914e9c8c5dd17b8ffd
 

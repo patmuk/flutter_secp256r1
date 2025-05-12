@@ -1,11 +1,10 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:agent_dart/agent_dart.dart' show P256PublicKey;
+import 'package:secp256r1/definitions/p256.dart';
 import 'package:convert/convert.dart';
 import 'package:flutter/material.dart';
 import 'package:secp256r1/secp256r1.dart';
-import 'package:tuple/tuple.dart';
 
 void main() {
   runApp(const MyApp());
@@ -22,8 +21,9 @@ class _MyAppState extends State<MyApp> {
   String _publicKey = 'Unknown';
   String _signed = 'Unknown';
   bool? _verified;
-  String? _sharedSecret, _decrypted;
-  Tuple2<Uint8List, Uint8List>? _encrypted;
+  String? _sharedSecret;
+  // String? _decrypted;
+  // Tuple2<Uint8List, Uint8List>? _encrypted;
 
   final _payloadTEC = TextEditingController(text: 'Hello world');
   final _othersPublicKeyTEC = TextEditingController();
@@ -45,8 +45,8 @@ class _MyAppState extends State<MyApp> {
             SelectableText('sign: $_signed\n'),
             SelectableText('verify: $_verified\n'),
             SelectableText('sharedSecret: $_sharedSecret\n'),
-            SelectableText('encrypted: $_encrypted\n'),
-            SelectableText('decrypted: $_decrypted\n'),
+            // SelectableText('encrypted: $_encrypted\n'),
+            // SelectableText('decrypted: $_decrypted\n'),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
               child: TextField(
@@ -109,29 +109,29 @@ class _MyAppState extends State<MyApp> {
               },
               child: const Text('getSharedSecret'),
             ),
-            ElevatedButton(
-              onPressed: () {
-                SecureP256.encrypt(
-                  sharedSecret: Uint8List.fromList(
-                    hex.decode(_sharedSecret!),
-                  ),
-                  message: Uint8List.fromList(utf8.encode('Hello AstroX')),
-                ).then((r) => setState(() => _encrypted = r));
-              },
-              child: const Text('Encrypt (FFI)'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                SecureP256.decrypt(
-                  sharedSecret: Uint8List.fromList(
-                    hex.decode(_sharedSecret!),
-                  ),
-                  iv: _encrypted!.item1,
-                  cipher: _encrypted!.item2,
-                ).then((r) => setState(() => _decrypted = utf8.decode(r)));
-              },
-              child: const Text('Decrypt (FFI)'),
-            ),
+            // ElevatedButton(
+            //   onPressed: () {
+            //     SecureP256.encrypt(
+            //       sharedSecret: Uint8List.fromList(
+            //         hex.decode(_sharedSecret!),
+            //       ),
+            //       message: Uint8List.fromList(utf8.encode('Hello AstroX')),
+            //     ).then((r) => setState(() => _encrypted = r));
+            //   },
+            //   child: const Text('Encrypt (FFI)'),
+            // ),
+            // ElevatedButton(
+            //   onPressed: () {
+            //     SecureP256.decrypt(
+            //       sharedSecret: Uint8List.fromList(
+            //         hex.decode(_sharedSecret!),
+            //       ),
+            //       iv: _encrypted!.item1,
+            //       cipher: _encrypted!.item2,
+            //     ).then((r) => setState(() => _decrypted = utf8.decode(r)));
+            //   },
+            //   child: const Text('Decrypt (FFI)'),
+            // ),
           ],
         ),
       ),

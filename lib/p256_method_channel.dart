@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import 'p256_platform_interface.dart';
-import 'src/constants.dart';
+import 'definitions/constants.dart';
 
 /// An implementation of [SecureP256Platform] that uses method channels.
 class SecureP256Channel extends SecureP256Platform {
