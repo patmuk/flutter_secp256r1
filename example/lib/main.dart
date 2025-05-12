@@ -31,27 +31,10 @@ class _MyAppState extends State<MyApp> {
   String get _verifyPayload => _payloadTEC.text;
 
   @override
-  void initState() {
-    super.initState();
-    _othersPublicKeyTEC.addListener(_onOthersPublicKeyChanged);
-  }
-
-  @override
   void dispose() {
-    _othersPublicKeyTEC.removeListener(_onOthersPublicKeyChanged);
     _payloadTEC.dispose();
     _othersPublicKeyTEC.dispose();
     super.dispose();
-  }
-
-  void _onOthersPublicKeyChanged() {
-    if (_othersPublicKeyTEC.text.isNotEmpty) {
-      _getSharedSecret();
-    } else {
-      setState(() {
-        _sharedSecret = null;
-      });
-    }
   }
 
   Future<void> _getPublicKey() async {
@@ -95,21 +78,27 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
-  Future<void> _getSharedSecret() async {
-    try {
-      final r = await SecureP256.getSharedSecret(
-        alias,
-        P256PublicKey.fromRaw(
-          Uint8List.fromList(
-            hex.decode(_othersPublicKeyTEC.text),
+  Future<void> _getSharedSecret(String publicKeyHex) async {
+    if (publicKeyHex.isNotEmpty) {
+      try {
+        final r = await SecureP256.getSharedSecret(
+          alias,
+          P256PublicKey.fromRaw(
+            Uint8List.fromList(
+              hex.decode(publicKeyHex),
+            ),
           ),
-        ),
-      );
-      setState(() => _sharedSecret = hex.encode(r));
-    } catch (e) {
-      setState(() =>
-          _sharedSecret = 'Error: Invalid Public Key or computation failed');
-      print('Error getting shared secret: $e'); // Log the error for debugging
+        );
+        setState(() => _sharedSecret = hex.encode(r));
+      } catch (e) {
+        setState(() =>
+            _sharedSecret = 'Error: Invalid Public Key or computation failed');
+        print('Error getting shared secret: $e'); // Log the error for debugging
+      }
+    } else {
+      setState(() {
+        _sharedSecret = null;
+      });
     }
   }
 
@@ -128,14 +117,18 @@ class _MyAppState extends State<MyApp> {
               child: const Text('Generate Public Key'),
             ),
             SelectableText('Public Key: $_publicKey\n'),
-            TextField(
+            TextFormField(
+              // Changed to TextFormField for onChanged
               controller: _othersPublicKeyTEC,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 labelText: 'Others Public Key (hex)',
               ),
+              onChanged: (value) {
+                // Use onChanged to trigger the shared secret calculation
+                _getSharedSecret(value);
+              },
             ),
-            // Shared secret is updated automatically when Others Public Key is entered
             SelectableText('Shared Secret: ${_sharedSecret ?? 'Unknown'}\n'),
             TextField(
               controller: _payloadTEC,
