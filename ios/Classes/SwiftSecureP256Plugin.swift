@@ -67,9 +67,9 @@ public class SwiftSecureP256Plugin: NSObject, FlutterPlugin {
                 let tag = param!["tag"] as! String
                 let publicKeyData = (param!["publicKey"] as! FlutterStandardTypedData).data
                 var password : String? = nil
-                if let pwd = param!["password"] as? String {
-                    password = pwd
-                }
+                // if let pwd = param!["password"] as? String {
+                //     password = pwd
+                // }
                 
                 let sharedSecret = try getSharedSecret(tag: tag, password: password, publicKeyData: publicKeyData)!
                 result(FlutterStandardTypedData(bytes: sharedSecret))
